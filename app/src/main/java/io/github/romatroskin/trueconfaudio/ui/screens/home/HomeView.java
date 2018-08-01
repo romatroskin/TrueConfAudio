@@ -1,6 +1,11 @@
 package io.github.romatroskin.trueconfaudio.ui.screens.home;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,17 +21,26 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.github.romatroskin.trueconfaudio.R;
+import io.github.romatroskin.trueconfaudio.ui.MainActivity;
 import io.github.romatroskin.trueconfaudio.ui.MainActivityComponent;
+import io.github.romatroskin.trueconfaudio.ui.RequestPermissionsResult;
 import io.github.romatroskin.trueconfaudio.ui.screens.BaseView;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.PublishSubject;
 
 public class HomeView extends BaseView implements HomeScreen.View {
+    private final static int RECORD_AUDIO_PERMISSIONS_REQUEST = 1337;
 
     @BindView(R.id.tv_time) TextView timeText;
     @BindView(R.id.ib_play) ImageButton playButton;
     @BindView(R.id.ib_record) ImageButton recordButton;
 
     @Inject HomePresenter presenter;
+    @Inject MainActivity activity;
+    @Inject PublishSubject<RequestPermissionsResult> permissions;
     private File outputFile;
+    private Disposable permissionsSub;
 
     public HomeView(Context context) {
         super(context);
@@ -53,6 +67,26 @@ public class HomeView extends BaseView implements HomeScreen.View {
 
     @Override
     public void onShow() {
+        permissionsSub = permissions.subscribe(requestPermissionsResult -> {
+            if(requestPermissionsResult.getRequestCode() == RECORD_AUDIO_PERMISSIONS_REQUEST) {
+                for(int res : requestPermissionsResult.getGrantResults()) {
+                    if(res != PackageManager.PERMISSION_GRANTED) {
+                        onError("RECORD_AUDIO permission should be granted");
+                        recordButton.setEnabled(false);
+                    }
+                }
+            }
+        });
+
+        if(ContextCompat.checkSelfPermission(getContext(),
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity,
+                    new String[] { Manifest.permission.RECORD_AUDIO },
+                    RECORD_AUDIO_PERMISSIONS_REQUEST);
+        }
+
+
         playButton.setEnabled(false);
         presenter.onLoad();
     }
@@ -60,6 +94,7 @@ public class HomeView extends BaseView implements HomeScreen.View {
     @Override
     public void onDestroy() {
         presenter.onSave();
+        permissionsSub.dispose();
     }
 
     @OnClick(R.id.ib_record)
@@ -97,5 +132,10 @@ public class HomeView extends BaseView implements HomeScreen.View {
     public void onRecordComplete() {
         recordButton.setEnabled(true);
         playButton.setEnabled(true);
+    }
+
+    @Override
+    public void onError(String message) {
+        Snackbar.make(this, message, Snackbar.LENGTH_LONG);
     }
 }

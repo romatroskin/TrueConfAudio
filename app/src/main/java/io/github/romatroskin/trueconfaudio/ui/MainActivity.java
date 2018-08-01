@@ -41,7 +41,6 @@ import static mortar.MortarScope.findChild;
 
 public class MainActivity extends AppCompatActivity {
     private final static String SERVICE_NAME = MainActivity.class.getName();
-    private final static int RECORD_AUDIO_PERMISSIONS_REQUEST = 1337;
 
     @BindView(R.id.main_content) FrameLayout content;
     @BindView(R.id.main_toolbar) Toolbar toolbar;
@@ -93,13 +92,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[] { Manifest.permission.RECORD_AUDIO },
-                    RECORD_AUDIO_PERMISSIONS_REQUEST);
-        }
+        this.requestPermissionsResults = PublishSubject.create();
     }
 
     @Override

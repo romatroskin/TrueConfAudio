@@ -27,6 +27,7 @@ import javax.inject.Inject;
 public class HomePresenter implements HomeScreen.Presenter {
     private static final int RECORD_TICK = 1;
     private static final int RECORD_COMPLETE = 2;
+    private static final int ERROR_CODE = 3;
 
     private static final int DEFAULT_BUFFER_SIZE = 2048;
     private static final int DEFAULT_SAMPLE_RATE = 44100;
@@ -52,6 +53,9 @@ public class HomePresenter implements HomeScreen.Presenter {
                 case RECORD_COMPLETE:
                     audioRecord.stop();
                     view.onRecordComplete();
+                    break;
+                case ERROR_CODE:
+                    view.onError((String) msg.obj);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -132,6 +136,9 @@ public class HomePresenter implements HomeScreen.Presenter {
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
+                        Message errorMessage = handler.obtainMessage(ERROR_CODE,
+                                "Recording error.");
+                        errorMessage.sendToTarget();
                     }
                 }
             });
@@ -174,6 +181,8 @@ public class HomePresenter implements HomeScreen.Presenter {
                     audioTrack.write(shorts, 0, shorts.length);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Message errorMessage = handler.obtainMessage(ERROR_CODE, "Playing error.");
+                    errorMessage.sendToTarget();
                 }
             });
             playingThread.start();

@@ -25,7 +25,7 @@ final class MainActivityModule {
     }
 
     @Provides @ActivityScope
-    PublishSubject<RequestPermissionsResult> provideActivityResults(MainActivity activity) {
+    PublishSubject<RequestPermissionsResult> provideRequestPermissionsResult(MainActivity activity) {
         return activity.getRequestPermissionsResults();
     }
 }

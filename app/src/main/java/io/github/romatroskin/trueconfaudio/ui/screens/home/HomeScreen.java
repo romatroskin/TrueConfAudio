@@ -13,6 +13,7 @@ public class HomeScreen implements IScreen {
     interface View extends IView {
         void setTime(int seconds);
         void onRecordComplete();
+        void onError(String message);
     }
 
     interface Presenter extends IPresenter {
