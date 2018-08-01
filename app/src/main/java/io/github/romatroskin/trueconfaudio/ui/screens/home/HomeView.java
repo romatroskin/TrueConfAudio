@@ -26,7 +26,6 @@ import io.github.romatroskin.trueconfaudio.ui.MainActivityComponent;
 import io.github.romatroskin.trueconfaudio.ui.RequestPermissionsResult;
 import io.github.romatroskin.trueconfaudio.ui.screens.BaseView;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
 public class HomeView extends BaseView implements HomeScreen.View {
@@ -108,6 +107,7 @@ public class HomeView extends BaseView implements HomeScreen.View {
             presenter.record(outputFile.getCanonicalPath());
         } catch (IOException e) {
             recordButton.setEnabled(true);
+            onError("Error creating temporary file.");
             e.printStackTrace();
         }
     }
@@ -118,6 +118,7 @@ public class HomeView extends BaseView implements HomeScreen.View {
             try {
                 presenter.play(outputFile.getCanonicalPath());
             } catch (IOException e) {
+                onError("Error reading temporary file.");
                 e.printStackTrace();
             }
         }
